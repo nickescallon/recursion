@@ -7,38 +7,40 @@ var stringifyJSON = function (obj) {
 	var result = '';
 
 	//handle numbers and booleans
-	if (typeof obj === 'number' || typeof obj === 'boolean'){
+	if (typeof obj === 'number' || typeof obj === 'boolean') { 
 	 	result += obj.toString();
 	 }
 
 	 //handle strings
-	 if (typeof obj === 'string'){
+	 if (typeof obj === 'string') {
 	 	result += '"' + obj + '"';
 	 }
 
 	 //handle null
-	 if (obj === null){
+	 if (obj === null) {
 	 	result += 'null';
-	 } 
+	 }
 
-	 //handle arrays and objects
+	 //handle arrays and objects, ignoring functions and undefined
 	 if (Array.isArray(obj)){
 	 	result += '[';
-	 	for (var i=0; i<obj.length; i++){
+	 	for (var i=0; i<obj.length; i++) {
 	 		result += stringifyJSON(obj[i]);
 	 		if (i < obj.length - 1) {
 	 			result += ',';
 	 		}
 	 	}
 	 	result += ']';
-	 } else if (typeof obj === 'object' && obj != null ){
+	 } else if (typeof obj === 'object' && obj != null ) {
 	 	result += '{';
 	 	var len = Object.getOwnPropertyNames(obj).length -1;
 	 	var count = 0;
 	 	for (keys in obj){
-	 		result += stringifyJSON(keys) + ':' + stringifyJSON(obj[keys]);
-	 		if (count < len){
+	 		if ((typeof obj[keys] != 'undefined') && (typeof obj[keys] != 'function')) {
+	 			result += stringifyJSON(keys) + ':' + stringifyJSON(obj[keys]);
+	 			if (count < len) {
 	 			result += ',';
+	 			}
 	 		}
 	 		count ++;
 	 	}
