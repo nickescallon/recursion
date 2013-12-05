@@ -7,7 +7,7 @@
 var getElementsByClassName = function (className) {
   var results = [];
 
-  var test = function(element){
+  var getElements = function(element){
   	var nodes = element.childNodes;
   	for (var i=0; i<nodes.length; i++) {
   		if(nodes[i].classList) {
@@ -16,13 +16,13 @@ var getElementsByClassName = function (className) {
   			}
   		}
   		if(nodes[i].childNodes) {
-  			test(nodes[i]);
+  			getElements(nodes[i]);
   		}
   	}
   	return results;
   }
 
-  return test(document);
+  return getElements(document);
 
 };
 
