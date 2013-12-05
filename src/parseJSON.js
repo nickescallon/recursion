@@ -3,51 +3,60 @@
 
 // but you're not, so you'll write it from scratch:
 var parseJSON = function (json) {
-  var result = {};
-
-if (typeof json === 'number' || typeof json === 'boolean') { 
+	
+	//handle numbers, bools, and nulls
+	if (typeof json === 'number' || typeof json === 'boolean' || json == null) { 
 	 	return json;
 	}
 
+	//handle strings of bools and nulls
+	if (json === "true") {return true};
+	if (json === "false") {return false};
+	if (json === "null") {return null};
 
-  //creates an array where each index is a key value pair, removes all spaces
-  var strArr = json.split(' ').join('').split(',');
-
-  //iterates through said arrray
-  for (var i=0; i<strArr.length; i++){
+	//sets result based on json obj
+	if (json[0] == '{') {var result = {}};
+	if (json[0] == '[') {var result = []};
 
 
-  	//creates an array splitting keys and values
-  	var keyVal = strArr[i].split(':');
+  	//creates an array where each index is a key value pair, removes all spaces
+  	var strArr = json.split(' ').join('').split(',');
+
+  	//iterates through said arrray
+  	for (var i=0; i<strArr.length; i++){
+
+
+  		//creates an array splitting keys and values
+  		var keyVal = strArr[i].split(':');
   	
-  	var key = (Object.keys(result).length) ? keyVal[0].slice(1, keyVal[0].length-1) : keyVal[0].slice(2, keyVal[0].length-1);
+  		var key = (Object.keys(result).length) ? keyVal[0].slice(1, keyVal[0].length-1) : keyVal[0].slice(2, keyVal[0].length-1);
 
   	
-  	//Handle objects and arrays (currently not arrays)
-  	if (keyVal[1]){
+  		//Handle objects and arrays (currently not arrays)
+  		if (keyVal[1]){
   	
-  		if (keyVal[1][0] == '{'){;
-  			/*while(keyVal[2]){
-  				if (keyVal[2].indexOf('}') == -1){
-  					keyVal[1]+= ':' + keyVal[2] + ",";
-  					keyVal.splice(2, 0);
+  			if (keyVal[1][0] == '{'){;
+  				if(keyVal[2]){
+  					while (keyVal[2].indexOf('}') == -1){
+  						keyVal[1]+= ':' + keyVal[2];
+  						keyVal.splice(2, 1);
+  					}
   				}
-  			}*/
-  			keyVal[1]+= ':' + keyVal[2] + '}';
-  			keyVal.splice(2,0);
-  			keyVal[1] = keyVal[1].replace('}}', '}');
-  			var val = parseJSON(keyVal[1]);
-  		}else {
-  			var val = (keyVal[1].substr(-1) == '}') ? keyVal[1].slice(1, keyVal[1].length-2) : keyVal[1].slice(1, keyVal[1].length-1);
-  		}
+  				keyVal[1]+= ':' + keyVal[2] + '}';
+  				keyVal.splice(2,1);
+  				keyVal[1] = keyVal[1].replace('}}', '}');
+  				var val = parseJSON(keyVal[1]);
+  			}else {
+  				var val = (keyVal[1].substr(-1) == '}') ? keyVal[1].slice(1, keyVal[1].length-3) : keyVal[1].slice(1, keyVal[1].length-1);
+  			}
 
-  		result[key] = val;
+  			result[key] = val;
   	
-  	}
-}
+  		}
+	}
 
-  //
-return result;
+  
+	return result;
 };
 
 
