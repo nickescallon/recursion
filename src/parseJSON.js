@@ -14,12 +14,102 @@ var parseJSON = function (json) {
 	if (json === "false") {return false};
 	if (json === "null") {return null};
 
+	//handle strings
+	if(!(/[\{\}\[\],]/.test(json))){
+		return json;
+	}
+
 	//sets result based on json obj
-	if (json[0] == '{') {var result = {}};
-	if (json[0] == '[') {var result = []};
+	if (json[0] == '{') {var result = {}, obj = true};
+	//if (json[0] == '[') {var result = [], arr = true};
+
+	//handle object values
+	if (json[0] == ':') {
+		console.log(json[1] + " is string val [1]");
+		if (json[1] == '{') {
+			var remainder = json.substr(1, json.length-1);
+			var value = parseJSON(remainder);
+		}
+
+		if (json[1] === '"') {
+			var value = '';
+			var count = 1;
+			while (json[count] != ',' && json[count] != '}') {
+				if (json[count] != '"'){
+					value += json[count];
+					//console.log(value);
+				}
+				count++;
+			}
+		}
+
+		return value;
+	}
+
+	//handle commas for objects
+	if (json[0] == ',') {
+		parseJSON(walk(json));
+	}
+
+	//handle objects
+	if (obj){
+		parseJSON(walk(json));
+	}
+
+	var walk = function(str, remainder) {
+		var key = [];
+		if (remainder == undefined) {
+			for (var i=1; i<str.length; i++) {
+				if (!(/[\{\}\[\],\": ]/.test(str[i]))) {
+					key.push(str[i]);
+				}
+
+				if (str[i] == ':') {
+					var keyStr = key.join('');
+					var remainder = str.substr(i, str.length-(i));
+					var val = parseJSON(keyStr);
+					result[keyStr] = val;
+					return remainder;
+				}
+			}
+		}
+  	};
+
+  
+	return result;
+};
 
 
-  	//creates an array where each index is a key value pair, removes all spaces
+
+//json '{"id":"value"}'
+		//'"id:"value"'
+
+
+
+
+
+/*if (obj){
+		//remove spaces
+		json.split(' ').join('');
+		var newStr = json.substr(2, json.length-3);
+		var key = '';
+		var count = 0;
+		if (newStr.indexOf(':') != -1){
+			while (newStr[count+1] != ':' && newStr[count+1] != ','){
+				key += newStr[count];
+				count++;
+			}
+		}
+		var remainder = newStr.substr(count+2, newStr.length-4);
+		if (remainder[0] == '{' || remainder[0] == '['){
+			result[key] = parseJSON(remainder);
+		}
+
+	}
+*/
+
+
+/*//creates an array where each index is a key value pair, removes all spaces
   	var strArr = json.split(' ').join('').split(',');
 
   	//iterates through said arrray
@@ -33,7 +123,19 @@ var parseJSON = function (json) {
 
   	
   		//Handle objects and arrays (currently not arrays)
-  		if (keyVal[1]){
+  			if (keyVal[1][0] == '['){
+  				if(keyVal[2]){
+  					while (keyVal[2].indexOf(']') == -1){
+  						keyVal[1]+= ',' + keyVal[2];
+  						keyVal.splice(2, 1);
+  					}
+  				}
+  				keyVal[1]+= ',' + keyVal[2] + ']';
+  				keyVal.splice(2,1);
+  				keyVal[1] = keyVal[1].replace(']]', '');
+  				//keyVal[1] = keyVal[1].substr(0, keyVal[1].length-1);
+  				var val = parseJSON(keyVal[1]);
+  			}
   	
   			if (keyVal[1][0] == '{'){;
   				if(keyVal[2]){
@@ -44,20 +146,17 @@ var parseJSON = function (json) {
   				}
   				keyVal[1]+= ':' + keyVal[2] + '}';
   				keyVal.splice(2,1);
-  				keyVal[1] = keyVal[1].replace('}}', '}');
+  				keyVal[1] = keyVal[1].replace('}}', '');
+  				//keyVal[1] = keyVal[1].substr(0, keyVal[1].length-1);
   				var val = parseJSON(keyVal[1]);
   			}else {
-  				var val = (keyVal[1].substr(-1) == '}') ? keyVal[1].slice(1, keyVal[1].length-3) : keyVal[1].slice(1, keyVal[1].length-1);
+  				var val = (keyVal[1].substr(-1) == '}') ? keyVal[1].slice(1, keyVal[1].length-1) : keyVal[1].slice(1, keyVal[1].length-1);
   			}
 
   			result[key] = val;
   	
-  		}
-	}
+	}*/
 
-  
-	return result;
-};
 
 
 
