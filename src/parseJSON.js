@@ -3,9 +3,10 @@
 
 // but you're not, so you'll write it from scratch:
 var parseJSON = function (json) {
+	var currentIndex = 0;
+	var commaIndexCount = 1;
 
 	var walk = function(str, remain) {
-
 		//handle numbers, bools, and nulls
 		if (typeof str === 'number' || typeof str === 'boolean' || str == null) { 
 	 		return str;
@@ -53,19 +54,51 @@ var parseJSON = function (json) {
 
 		if (str[0] == '{'){
 			var result = {};
-			while(remainder.slice(-1) == '}' && (/[a-zA-Z]/).test(remainder) && remainder.length > 2){
-				var value = walk(remainder);
-				result[val] = value;
-				var newRemainder = remainder.substr(value.length+3, remainder.length - value.length+3);
-				remainder = newRemainder;
-				val = walk(remainder);
-				newRemainder = remainder.substr(val.length+3, remainder.length - val.length+3);
-				remainder = newRemainder;
+			if (json == str){
+				while(currentIndex <= json.length){
+					while(remainder.slice(-1) == '}' && (/[a-zA-Z]/).test(remainder)){
+						var value = walk(remainder);
+						result[val] = value;
+						remainder = remainder.substr(value.length+3, remainder.length - value.length+3);
+						val = walk(remainder);
+						remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
+					}
+					var commaIndex = findComma(json, commaIndexCount);
+					commaIndexCount++;
+					remainder = json.substr(commaIndex, json.length-commaIndex);
+					currentIndex += 3;
+					val = walk(remainder);
+					remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
+				}
+			}else{
+				while(remainder.slice(-1) == '}' && (/[a-zA-Z]/).test(remainder)){
+						var value = walk(remainder);
+						result[val] = value;
+						remainder = remainder.substr(value.length+3, remainder.length - value.length+3);
+						val = walk(remainder);
+						remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
+					}
 			}
-
 		}
 		return result;
+
+		 		
   	};
+
+	var findComma = function(str, n){
+		var count = 0;
+		for (var i=0; i<str.length; i++){
+			if (str.charAt(i) == ',') {
+				count++;
+				if (count == n){
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+
 
   	return walk(json);
 
