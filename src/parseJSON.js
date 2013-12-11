@@ -4,11 +4,25 @@
 // but you're not, so you'll write it from scratch:
 var parseJSON = function (json) {
 	var currentIndex = 0;
-	var commaIndexCount = 1;
 
-	var walk = function(str, remain) {
+	var walk = function(str) {
+		if (json === null){
+			return null;
+		}
+
+		if (currentIndex >= json.length){
+			return "error";
+		}
+
+		var cha = json[currentIndex];
+
 		//handle numbers, bools, and nulls
-		if (typeof str === 'number' || typeof str === 'boolean' || str == null) { 
+		if (typeof str === 'number' || typeof str === 'boolean' || str === null) { 
+	 		if (str === null){
+	 			currrentIndex += 4;
+	 		}else{
+	 			currentIndex += str.toString().length;
+	 		}
 	 		return str;
 		}
 
@@ -19,85 +33,85 @@ var parseJSON = function (json) {
 
 		//handle strings
 		if(!(/[\{\}\[\],]/.test(str))){
+			currentIndex += str.length;
 			return str;
 		}
 
 		//walk through str
-		var strArr = [];
-		for (var i=0; i<str.length; i++){
-			if (!(/[\{\}\[\],\": ]/.test(str[i]))) {
-					strArr.push(str[i]);
-			}
-			if (str[i] == ':' || str[i] == '}' || str[i] == ',') {
-				if (i != 0){
-					var val = strArr.join('');
-					var remainder = str.substr(i, str.length-(i));
-					break;
+		//handle quoted strings
+		if (cha == ':'){
+			currentIndex++;
+			cha = json[currentIndex];
+			var remainder = json.substr(currentIndex, json.length-currentIndex);
+			return walk (remainder);
+		}
+
+		if (cha == ','){
+			currentIndex++;
+			cha = json[currentIndex];
+			var remainder = json.substr(currentIndex, json.length-currentIndex);
+			return walk (remainder);
+		}
+
+		if (cha == '"') {		
+			var result = '';
+			currentIndex++;
+			cha = json[currentIndex];
+			while (cha != '"'){
+				result += cha;
+				currentIndex++;
+				cha = json[currentIndex];
+				if (currentIndex >= json.length){
+					return "error - string";
 				}
 			}
+			currentIndex++;
 		}
 
-		//
-		if (str[0] == ':' || str[0] == ','){
-			if (str[1] == '{'){
-				var remainder = str.substr(1, str.length-(1));
-				val = walk(remainder);
+		//handle arrays
+		if (cha == '['){
+			var result = [];
+			currentIndex++;
+			cha = json[currentIndex];
+			while (cha != ']'){
+				var remainder = json.substr(currentIndex, json.length-currentIndex);
+				var val = walk(remainder);
+				result.push(val);
+				cha = json[currentIndex];
+				if (currentIndex >= json.length){
+					return "error - array";
+				}
 			}
-			return val;
+			currentIndex++;
 		}
 
-		//
-		if (str[0] == '}') {
-			return str;
-		}
-
-
-		if (str[0] == '{'){
+		//handle objects
+		if (cha == '{') {
 			var result = {};
-			if (json == str){
-				while(currentIndex <= json.length){
-					while(remainder.slice(-1) == '}' && (/[a-zA-Z]/).test(remainder)){
-						var value = walk(remainder);
-						result[val] = value;
-						remainder = remainder.substr(value.length+3, remainder.length - value.length+3);
-						val = walk(remainder);
-						remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
-					}
-					var commaIndex = findComma(json, commaIndexCount);
-					commaIndexCount++;
-					remainder = json.substr(commaIndex, json.length-commaIndex);
-					currentIndex += 3;
-					val = walk(remainder);
-					remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
+			currentIndex++;
+			cha = json[currentIndex];
+			while (cha != '}'){	
+				var remainder = json.substr(currentIndex, json.length-currentIndex);
+				var key = walk(remainder);
+				remainder = json.substr(currentIndex, json.length-currentIndex);
+				var val = walk(remainder);
+				result[key] = val;
+				cha = json[currentIndex];
+				if (currentIndex >= json.length){
+					return "error - object";
 				}
-			}else{
-				while(remainder.slice(-1) == '}' && (/[a-zA-Z]/).test(remainder)){
-						var value = walk(remainder);
-						result[val] = value;
-						remainder = remainder.substr(value.length+3, remainder.length - value.length+3);
-						val = walk(remainder);
-						remainder = remainder.substr(val.length+3, remainder.length - val.length+3);
-					}
 			}
+			//currentIndex++ and delete following IF
 		}
+
+		if (cha == '}'){
+			currentIndex++;
+		}
+
 		return result;
 
 		 		
   	};
-
-	var findComma = function(str, n){
-		var count = 0;
-		for (var i=0; i<str.length; i++){
-			if (str.charAt(i) == ',') {
-				count++;
-				if (count == n){
-					return i;
-				}
-			}
-		}
-		return -1;
-	}
-
 
 
   	return walk(json);
