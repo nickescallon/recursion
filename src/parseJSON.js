@@ -6,39 +6,35 @@ var parseJSON = function (json) {
 	var currentIndex = 0;
 
 	var walk = function(str) {
-		if (json === null){
-			return null;
+
+		//handle non-string numbers, bools, and nulls
+		if (typeof(json) === 'number' || typeof(json) === 'boolean' || json === null){
+			return json;
 		}
 
+		//attempt to break out of infinite loops
 		if (currentIndex >= json.length){
 			return "error";
 		}
 
+		//current character being parsed in json
 		var cha = json[currentIndex];
 
-		//handle numbers, bools, and nulls
-		if (typeof str === 'number' || typeof str === 'boolean' || str === null) { 
-	 		if (str === null){
-	 			currrentIndex += 4;
-	 		}else{
-	 			currentIndex += str.toString().length;
-	 		}
-	 		return str;
+		//TBD: Handle bools in objects/arrays, handle escapes
+
+		//handle numbers
+		if (cha >= 0 && cha <= 9){
+			var numString = '';
+			while (cha >=0 && cha <= 9){
+				numString += cha;
+				currentIndex++;
+				cha = json[currentIndex];
+			}
+			var num = parseFloat(numString);
+			return num;
 		}
 
-		//handle strings of bools and nulls
-		if (str === "true") {return true};
-		if (str === "false") {return false};
-		if (str === "null") {return null};
-
-		//handle strings
-		if(!(/[\{\}\[\],]/.test(str))){
-			currentIndex += str.length;
-			return str;
-		}
-
-		//walk through str
-		//handle quoted strings
+		//handle semicolons
 		if (cha == ':'){
 			currentIndex++;
 			cha = json[currentIndex];
@@ -46,6 +42,7 @@ var parseJSON = function (json) {
 			return walk (remainder);
 		}
 
+		//handle commas
 		if (cha == ','){
 			currentIndex++;
 			cha = json[currentIndex];
@@ -53,6 +50,7 @@ var parseJSON = function (json) {
 			return walk (remainder);
 		}
 
+		//handle strings 
 		if (cha == '"') {		
 			var result = '';
 			currentIndex++;
@@ -67,6 +65,7 @@ var parseJSON = function (json) {
 			}
 			currentIndex++;
 		}
+
 
 		//handle arrays
 		if (cha == '['){
@@ -93,6 +92,10 @@ var parseJSON = function (json) {
 			while (cha != '}'){	
 				var remainder = json.substr(currentIndex, json.length-currentIndex);
 				var key = walk(remainder);
+				//keys must be strings in JSON
+				if (typeof(key) != 'string'){
+					return "Error - Keys must be strings";
+				}
 				remainder = json.substr(currentIndex, json.length-currentIndex);
 				var val = walk(remainder);
 				result[key] = val;
