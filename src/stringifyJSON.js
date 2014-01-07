@@ -4,49 +4,24 @@
 // but you don't so you're going to have to write it from scratch:
 
 var stringifyJSON = function (obj) {
-	var result = '';
+	if (typeof(obj) === 'string'){
+		return '"' + obj + '"';
+	}
 
-	//handle numbers and booleans
-	if (typeof obj === 'number' || typeof obj === 'boolean') { 
-	 	result += obj.toString();
-	 }
+	if (Array.isArray(obj)){
+		return '[' + _.map(obj, function(value){
+			return stringifyJSON(value);
+		}).join(',') + ']';
+	}
 
-	 //handle strings
-	 if (typeof obj === 'string') {
-	 	result += '"' + obj + '"';
-	 }
+	if (obj && typeof(obj) === 'object') {
+		return '{' + _.map(obj, function(value, index){
+		if(typeof(value) !== 'function' && value !== undefined){
+			return stringifyJSON(index) + ':' + stringifyJSON(value);
+		}}) + '}';
+	}
 
-	 //handle null
-	 if (obj === null) {
-	 	result += 'null';
-	 }
+	return "" + obj;
 
-	 //handle arrays and objects, ignoring functions and undefined
-	 if (Array.isArray(obj)){
-	 	result += '[';
-	 	for (var i=0; i<obj.length; i++) {
-	 		result += stringifyJSON(obj[i]);
-	 		if (i < obj.length - 1) {
-	 			result += ',';
-	 		}
-	 	}
-	 	result += ']';
-	 } else if (typeof obj === 'object' && obj != null ) {
-	 	result += '{';
-	 	var len = Object.getOwnPropertyNames(obj).length -1;
-	 	var count = 0;
-	 	for (keys in obj){
-	 		if ((typeof obj[keys] != 'undefined') && (typeof obj[keys] != 'function')) {
-	 			result += stringifyJSON(keys) + ':' + stringifyJSON(obj[keys]);
-	 			if (count < len) {
-	 			result += ',';
-	 			}
-	 		}
-	 		count ++;
-	 	}
-	 	result += '}';
-	 }
-
-	return result;
 };
 
