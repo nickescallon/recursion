@@ -4,8 +4,8 @@
 // };
 
 // But in stead we're going to implement it from scratch:
-var getElementsByClassName = function (className, root, result) {
-  result = result || [];
+var getElementsByClassName = function (className, root) {
+  var result = [];
   root = root || document.body;
 
   for (var i=0; i<root.childNodes.length; i++){
@@ -16,7 +16,8 @@ var getElementsByClassName = function (className, root, result) {
       }
     }
     if (child.childNodes){
-      getElementsByClassName(className, child, result);
+      var matched = getElementsByClassName(className, child);
+      result = result.concat(matched);
     }
   }
 

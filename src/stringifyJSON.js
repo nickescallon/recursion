@@ -4,6 +4,7 @@
 // but you don't so you're going to have to write it from scratch:
 
 var stringifyJSON = function (obj) {
+
 	if (typeof(obj) === 'string'){
 		return '"' + obj + '"';
 	}
@@ -14,12 +15,24 @@ var stringifyJSON = function (obj) {
 		}).join(',') + ']';
 	}
 
-	if (obj && typeof(obj) === 'object') {
-		return '{' + _.map(obj, function(value, index){
-		if(typeof(value) !== 'function' && value !== undefined){
-			return stringifyJSON(index) + ':' + stringifyJSON(value);
-		}}) + '}';
+
+
+	if (obj && typeof obj === 'object') {
+		var string = "{";
+		var count = 0;
+		for (var key in obj) {
+			if(typeof(obj[key]) !== 'function' && obj[key] !== undefined){
+				string += stringifyJSON(key) + ':' + stringifyJSON(obj[key]);
+				if (count < Object.keys(obj).length-1){
+					string += ',';
+					count++;
+				}
+			}
+		}
+		return string + '}';
 	}
+
+
 
 	return "" + obj;
 
