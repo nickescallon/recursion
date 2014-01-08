@@ -20,17 +20,36 @@ var parseJSON = function (json) {
       return walk(json[currentChar]);
     }
 
-    //Case for numbers
-    if (parseInt(json[currentChar])){
+    //case for true booleans
+    if (json[currentChar] === 't'){
+      currentChar += 4;
+      return true;
+    }
+
+    //case for false booleans
+    if (json[currentChar] === 'f'){
+      currentChar += 5;
+      return false;
+    }
+
+    //Case for null
+    if (json[currentChar] === 'n'){
+      currentChar += 4;
+      return null;
+    }
+
+
+    //Case for numbers - needs to be reworked for floats, negatives, and zeros
+    if (parseFloat(json[currentChar]) || json[currentChar] === '-' || (json[currentChar] === '.' ) || json[currentChar] === '0') {
       var result = '';
       result += json[currentChar];
       currentChar++;
-      while (parseInt(json[currentChar])){
+      while (parseFloat(json[currentChar]) || (json[currentChar] === '.' ) || json[currentChar] === '0') {
         result += json[currentChar];
         currentChar++;
       }
 
-      return parseInt(result);
+      return parseFloat(result);
     }
 
     //Case for strings
@@ -44,10 +63,12 @@ var parseJSON = function (json) {
       currentChar++;
       return result;
     }
+
     //Case for objects]
     if (json[currentChar] === '{'){
       var result = {};
       currentChar++;
+      debugger;
       while (json[currentChar] !== '}' && json[currentChar]){
         var key = walk(json[currentChar]);
         result[key] = walk(json[currentChar]);
@@ -62,7 +83,9 @@ var parseJSON = function (json) {
       currentChar++;
       while (json[currentChar] !== ']' && json[currentChar]){
         result.push(walk(json[currentChar]));
-        currentChar++;
+        if (json[currentChar] !== ']'){  
+          currentChar++;
+        }
       }
       return result;
     }
